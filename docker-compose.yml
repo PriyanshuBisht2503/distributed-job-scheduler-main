@@ -1,0 +1,63 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: scheduler-postgres
+    environment:
+      POSTGRES_DB: scheduler_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      # Auto-run our schema.sql to setup the tables on initial DB creation
+      - ./database/schema.sql:/docker-entrypoint-initdb.d/schema.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d scheduler_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  backend-api:
+    build:
+      context: .
+      dockerfile: docker/backend.Dockerfile
+    container_name: scheduler-backend
+    ports:
+      - "8080:8080"
+    environment:
+      DATABASE_URL: jdbc:postgresql://postgres:5432/scheduler_db
+      DATABASE_USERNAME: postgres
+      DATABASE_PASSWORD: postgres
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  worker-service:
+    build:
+      context: .
+      dockerfile: docker/worker.Dockerfile
+    container_name: scheduler-worker
+    environment:
+      DATABASE_URL: jdbc:postgresql://postgres:5432/scheduler_db
+      DATABASE_USERNAME: postgres
+      DATABASE_PASSWORD: postgres
+      WORKER_NAME: worker-node-docker
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  frontend:
+    build:
+      context: .
+      dockerfile: docker/frontend.Dockerfile
+    container_name: scheduler-frontend
+    ports:
+      - "3000:80"
+    depends_on:
+      - backend-api
+
+volumes:
+  pgdata:

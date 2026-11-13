@@ -1,0 +1,42 @@
+# Build output directories
+**/target/
+**/build/
+**/dist/
+**/dist-ssr/
+
+# Dependency directories
+**/node_modules/
+
+# Local databases and runtimes
+/mysql-data/
+/jdk-*/
+/apache-maven-*/
+
+# Log files
+*.log
+**/logs/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# IDE configurations
+.idea/
+.vscode/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+.DS_Store
+
+# Compiled Java resources and packages
+*.class
+*.jar
+*.war
+
+# Environment variables
+.env
+.env.local
+.env.*.local
